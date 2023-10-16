@@ -50,6 +50,12 @@ namespace GameMencocokan
         /// <param name="e"></param>
         private void label1_Click(object sender, EventArgs e)
         {
+            // The timer is only on after two non-matching 
+            // icons have been shown to the player, 
+            // so ignore any clicks if the timer is running
+            if (timer1.Enabled == true)
+                return;
+
             Label clickedLabel = sender as Label;
 
             if (clickedLabel != null)
@@ -60,17 +66,38 @@ namespace GameMencocokan
                 if (clickedLabel.ForeColor == Color.Black)
                     return;
 
-                // If firstClicked is null, this is the first icon 
-                // in the pair that the player clicked,
+                // If firstClicked is null, this is the first icon
+                // in the pair that the player clicked, 
                 // so set firstClicked to the label that the player 
                 // clicked, change its color to black, and return
                 if (firstClicked == null)
                 {
                     firstClicked = clickedLabel;
                     firstClicked.ForeColor = Color.Black;
-
                     return;
                 }
+
+                secondClicked = clickedLabel;
+                secondClicked.ForeColor = Color.Black;
+
+                // Check to see if the player won
+                CheckForWinner();
+
+                // If the player clicked two matching icons, keep them 
+                // black and reset firstClicked and secondClicked 
+                // so the player can click another icon
+                if (firstClicked.Text == secondClicked.Text)
+                {
+                    firstClicked = null;
+                    secondClicked = null;
+                    return;
+                }
+
+                // If the player gets this far, the player 
+                // clicked two different icons, so start the 
+                // timer (which will wait three quarters of 
+                // a second, and then hide the icons)
+                timer1.Start();
             }
         }
 
@@ -119,6 +146,33 @@ namespace GameMencocokan
             // clicked, the program knows it's the first click
             firstClicked = null;
             secondClicked = null;
+        }
+
+        /// <summary>
+        /// Check every icon to see if it is matched, by 
+        /// comparing its foreground color to its background color. 
+        /// If all of the icons are matched, the player wins
+        /// </summary>
+        private void CheckForWinner()
+        {
+            // Go through all of the labels in the TableLayoutPanel, 
+            // checking each one to see if its icon is matched
+            foreach (Control control in tableLayoutPanel1.Controls)
+            {
+                Label iconLabel = control as Label;
+
+                if (iconLabel != null)
+                {
+                    if (iconLabel.ForeColor == iconLabel.BackColor)
+                        return;
+                }
+            }
+
+            // If the loop didn’t return, it didn't find
+            // any unmatched icons
+            // That means the user won. Show a message and close the form
+            MessageBox.Show("You matched all the icons!", "Congratulations");
+            Close();
         }
     }
 }
